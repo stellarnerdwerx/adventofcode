@@ -1,0 +1,58 @@
+import functools
+import pandas as pd
+import numpy as np
+
+op_map = {
+    "+": lambda a, b: a + b,
+    "*": lambda a, b: a * b
+}
+
+def iter_part1(size, start, end):
+    for i in range(size-1):
+        yield [(i, j) for j in range(start, end+1)]
+
+def iter_part2(size, start, end):
+    for i in range(start, end+1):
+        yield [(j, i) for j in range(size-1)]
+
+def get_operator_positions(table):
+    ops = []
+    #table[-1] is the operator row
+    for i, op in enumerate(table[-1]):
+        if op in "+*":
+            ops.append(i)
+    return ops
+
+def solve(table, iter_part):
+    ans = 0
+    ops = get_operator_positions(table)
+    
+    for i, start in enumerate(ops):
+        if i==len(ops)-1:
+            end = len(table[0])-2 
+        else:
+            end = ops[i+1]-2
+        
+        ps = [] 
+        for problem in iter_part(len(table), start, end):
+            n = 0
+            for i,j in problem:
+                if j>=len(table[i]) or table[i][j]==" ":
+                    continue
+                char = table[i][j]
+                if char.isdigit():
+                    digit = int(char)
+                    n = n*10 + digit
+            
+            if n>0:
+                ps.append(n)
+        if ps:
+            operator_char = table[-1][start]
+            ans += functools.reduce(op_map[operator_char], ps)
+    return ans
+
+with open('six.txt', 'r') as f:
+    data = [line.rstrip('\n') for line in f]
+
+print(solve(data, iter_part1))
+print(solve(data, iter_part2))
